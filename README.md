@@ -10,5 +10,6 @@ docker run --rm -v "$PWD":/app composer install
 
 ./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate
+./vendor/bin/sail artisan db:seed
 ./vendor/bin/sail npm run dev
 ```
