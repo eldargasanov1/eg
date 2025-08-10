@@ -30,7 +30,7 @@ class StoreController extends Controller
     }
 
     public function group(StoreRequest $request, Group $group): Response {
-        $groupTree = $this->groupService->getGroupsTree();
+        $groupTree = $this->groupService->getGroupsTree($group);
         $groupsIds = $this->groupService->flattenGroupTree($group)->pluck('id')->toArray();
         $products = Product::query()
             ->whereIn('group_id', $groupsIds)
@@ -45,7 +45,7 @@ class StoreController extends Controller
     }
 
     public function product(Group $group, Product $product) {
-        $groups = $this->groupService->getGroupsTree($group);
+        $groups = $this->groupService->getGroupsTree();
         return ['groups' => $groups, 'product' => $product];
     }
 }

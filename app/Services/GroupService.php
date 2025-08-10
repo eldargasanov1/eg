@@ -14,13 +14,23 @@ class GroupService
         $this->groupsTree = $this->getGroupsTree();
     }
 
-    public function getGroupsTree(): Collection
+    public function getGroupsTree(?Group $activeGroup = null): Collection
     {
         if (!empty($this->groupsTree)) {
+            if (!empty($activeGroup)) {
+                $parentGroupId = Group::getFirstParentId($activeGroup);
+                $this->groupsTree->find($parentGroupId)->activeGroup = true;
+            }
+
             return $this->groupsTree;
         }
 
         $groupsTree = Group::query()->where('parent_id', 0)->with('allSubgroups')->withCount('products')->get();
+
+        if (!empty($activeGroup)) {
+            $parentGroupId = Group::getFirstParentId($activeGroup);
+            $groupsTree->find($parentGroupId)->activeGroup = true;
+        }
 
         foreach ($groupsTree as &$group) {
             $this->calculateTreeProductsCountForGroupTree($group);
@@ -80,7 +90,7 @@ class GroupService
     public function flattenGroupTree(Group $group): Collection
     {
         $items = new Collection([$group]);
-        $groupInTree = $this->findGroupInTree($group, $this->getGroupsTree());
+        $groupInTree = $this->findGroupInTreeCollection($group, $this->getGroupsTree());
         $subgroups = $groupInTree->allSubgroups;
 
         if ($subgroups->isEmpty()) {
@@ -94,7 +104,7 @@ class GroupService
         return $items;
     }
 
-    protected function findGroupInTree(Group $group, Collection $tree): ?Group
+    protected function findGroupInTreeCollection(Group $group, Collection $tree): ?Group
     {
         $result = null;
 
@@ -113,7 +123,7 @@ class GroupService
                 continue;
             }
 
-            $result = $this->findGroupInTree($group, $subgroups);
+            $result = $this->findGroupInTreeCollection($group, $subgroups);
         }
 
         return $result;

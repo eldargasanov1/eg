@@ -5,6 +5,7 @@ interface Group {
     products_count: number;
     tree_products_count: number;
     all_subgroups: Group[] | [];
+    activeGroup?: boolean
     created_at: string;
     updated_at: string;
 }
@@ -28,7 +29,7 @@ interface Price {
 
 interface PaginatedProducts {
     data: Product[];
-    links: PaginateLink[];
+    links: PaginationLink[];
     current_page: number;
     per_page: number;
     from: number;
@@ -42,8 +43,10 @@ interface PaginatedProducts {
     last_page: number;
 }
 
-interface PaginateLink {
+interface PaginationLink {
     url: string | null;
     label: number | '&laquo; Previous' | 'Next &raquo';
     active: boolean;
 }
+
+export type { Group, Product, Price, PaginatedProducts, PaginationLink };
