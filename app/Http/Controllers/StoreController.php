@@ -14,22 +14,26 @@ class StoreController extends Controller
 {
     public function __construct(
         protected GroupService $groupService
-    ) {}
+    )
+    {
+    }
 
-    public function index(StoreRequest $request): Response {
+    public function index(StoreRequest $request): Response
+    {
         $groupTree = $this->groupService->getGroupsTree();
         $products = Product::query()
             ->orderByParam(SortByParam::tryFrom(request('sortBy')))
             ->with('price')
             ->paginate(request('perPage'));
 
-        return Inertia::render('store', [
+        return Inertia::render('store/index', [
             'groups' => $groupTree,
             'products' => $products,
         ]);
     }
 
-    public function group(StoreRequest $request, Group $group): Response {
+    public function group(StoreRequest $request, Group $group): Response
+    {
         $groupTree = $this->groupService->getGroupsTree($group);
         $groupsIds = $this->groupService->flattenGroupTree($group)->pluck('id')->toArray();
         $products = Product::query()
@@ -38,14 +42,19 @@ class StoreController extends Controller
             ->with('price')
             ->paginate(request('perPage'));
 
-        return Inertia::render('store', [
+        return Inertia::render('store/index', [
             'groups' => $groupTree,
             'products' => $products,
         ]);
     }
 
-    public function product(Group $group, Product $product) {
-        $groups = $this->groupService->getGroupsTree();
-        return ['groups' => $groups, 'product' => $product];
+    public function product(Group $group, Product $product)
+    {
+        $groups = $this->groupService->getGroupsTree($group);
+        $product->load('price');
+        return Inertia::render('store/detail', [
+            'groups' => $groups,
+            'product' => $product
+        ]);
     }
 }
